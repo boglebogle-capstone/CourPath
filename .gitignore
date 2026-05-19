@@ -1,0 +1,37 @@
+# === Python / Backend ===
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+.env
+
+# === Node / Frontend ===
+node_modules/
+build/
+dist/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# === IDE ===
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# === OS ===
+.DS_Store
+Thumbs.db
+
+# === 프로젝트 ===
+# 클론 받은 원본 레포 (통합본만 올림)
+frontend-repo/
+algorithm-repo/
+
+# 임시 파일
+test_result.json
+*.log
+
+# claude 설정
+.claude/
