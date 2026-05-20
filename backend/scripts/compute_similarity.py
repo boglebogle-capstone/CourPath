@@ -12,7 +12,11 @@ import numpy as np
 import psycopg2
 from sentence_transformers import SentenceTransformer
 
-DB = dict(
+DATABASE_URL = os.getenv("DATABASE_URL")
+if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+DB = DATABASE_URL or dict(
     host=os.getenv("DB_HOST", "localhost"),
     port=os.getenv("DB_PORT", "5432"),
     dbname=os.getenv("DB_NAME", "courseguide"),
