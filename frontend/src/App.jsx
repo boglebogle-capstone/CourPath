@@ -28,11 +28,11 @@ export default function App() {
 
   // 5단계 흐름 인덱스 맵
   const STEP_NAMES = [
-    '학년/전공 입력',
+    '기본 정보 입력',
     '기이수 과목 선택',
     '수강 예정 선택',
-    '목표 직무 선택',
-    '최종 분석 실행'
+    '입력 사항 확인',
+    '분석 결과'
   ];
 
   return (
@@ -65,7 +65,7 @@ export default function App() {
         {step === 1 && <Step1 formData={formData} setFormData={setFormData} onNext={onNext} />}
         {step === 2 && <Step2 formData={formData} setFormData={setFormData} onNext={onNext} onPrev={onPrev} />}
         {step === 3 && <Step3 formData={formData} setFormData={setFormData} onNext={onNext} onPrev={onPrev} />}
-        {step === 4 && <Step4 formData={formData} setFormData={setFormData} onNext={onNext} onPrev={onPrev} />}
+        {step === 4 && <Step4 formData={formData} onNext={onNext} onPrev={onPrev} />}
         {step === 5 && <Step5 formData={formData} onPrev={onPrev} />}
       </div>
 

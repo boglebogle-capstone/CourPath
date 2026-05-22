@@ -27,7 +27,7 @@ EMBEDDING_WEIGHT = 0.6
 SKILL_WEIGHT = 0.4
 SYNERGY_THRESHOLD = 0.55
 CONFLICT_THRESHOLD = 0.25
-GRADE_HIGH_DIFF = 2
+GRADE_HIGH_DIFF = 1
 GRADE_LOW_DIFF = -1
 
 # ── 직무_기술스택_프로필 로드 ──
@@ -97,13 +97,13 @@ def check_grade_conflicts(course: Course, student_grade: int) -> Optional[dict]:
     if diff >= GRADE_HIGH_DIFF:
         return {
             "type": "grade_too_high",
-            "reason": f"{student_grade}학년이 {gl}학년 권장 과목 수강 — 선행 지식 부족으로 학습에 어려움이 예상됩니다.",
+            "reason": f"{student_grade}학년 학생이 {gl}학년 권장 과목을 수강신청했습니다. 선행 지식 부족으로 학습에 어려움이 예상됩니다.",
             "severity": "경고",
         }
     if diff <= GRADE_LOW_DIFF:
         return {
             "type": "grade_too_low",
-            "reason": f"{student_grade}학년이 {gl}학년 권장 과목 수강 — 이미 습득한 내용과 중복될 수 있습니다.",
+            "reason": f"{student_grade}학년 학생이 {gl}학년 권장 과목을 수강신청했습니다. 이미 습득한 내용과 중복될 수 있습니다.",
             "severity": "주의",
         }
     return None
@@ -139,11 +139,11 @@ def build_reason(
 ) -> str:
     parts = []
     if verdict == "시너지":
-        parts.append(f"'{job_subcategory}' 직무 임베딩과 유사도 {embedding_sim:.2f} — 직무 연관성 높음")
+        parts.append(f"'{job_subcategory}' 직무와 연관도 {embedding_sim:.2f} — 직무 연관성 높음")
     elif verdict == "보통":
         parts.append(f"{job_subcategory} 직무에 간접적으로 도움이 될 수 있는 과목입니다")
     else:
-        parts.append(f"{job_subcategory} 직무와 직접적 관련성이 낮습니다 (유사도 {embedding_sim:.2f})")
+        parts.append(f"{job_subcategory} 직무와 직접적 관련성이 낮습니다 (연관도 {embedding_sim:.2f})")
 
     if grade_conflict:
         parts.append(f"[{grade_conflict['severity']}] {grade_conflict['reason']}")
@@ -241,7 +241,7 @@ def run_analysis(db: Session, req: AnalyzeRequest) -> AnalyzeResponse:
             course_id=c["course_id"],
             course_name=c["course_name"],
             similarity_score=c["similarity_score"],
-            reason=f"'{req.job_subcategory}' 직무 임베딩 유사도 {c['similarity_score']:.2f} — 수강 권장",
+            reason=f"'{req.job_subcategory}' 직무 연관도 {c['similarity_score']:.2f} — 수강 권장",
         )
         for c in top_courses
     ]
