@@ -6,7 +6,7 @@ window.COURSE_DATA = [
   {
     "course_id": "685033",
     "course_name": "보안솔루션의이해",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 0,
     "credits": 3,
     "category": "전선",
@@ -40,7 +40,7 @@ window.COURSE_DATA = [
   {
     "course_id": "605000",
     "course_name": "정보과학개론",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 0,
     "credits": 1,
     "category": "공통전선",
@@ -73,7 +73,7 @@ window.COURSE_DATA = [
   {
     "course_id": "511601",
     "course_name": "선형대수",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 1,
     "credits": 3,
     "category": "공통전선",
@@ -109,7 +109,7 @@ window.COURSE_DATA = [
   {
     "course_id": "506819",
     "course_name": "자바프로그래밍Ⅰ",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 1,
     "credits": 3,
     "category": "공통전선",
@@ -142,7 +142,7 @@ window.COURSE_DATA = [
   {
     "course_id": "506820",
     "course_name": "자바프로그래밍Ⅱ",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 1,
     "credits": 3,
     "category": "공통전선",
@@ -182,7 +182,7 @@ window.COURSE_DATA = [
   {
     "course_id": "506808",
     "course_name": "C++프로그래밍",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 2,
     "credits": 3,
     "category": "공통전선",
@@ -220,7 +220,7 @@ window.COURSE_DATA = [
   {
     "course_id": "511644",
     "course_name": "C프로그래밍",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 2,
     "credits": 3,
     "category": "공통전선",
@@ -253,7 +253,7 @@ window.COURSE_DATA = [
   {
     "course_id": "511215",
     "course_name": "논리설계및실험",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 2,
     "credits": 3,
     "category": "공통전선",
@@ -288,7 +288,7 @@ window.COURSE_DATA = [
   {
     "course_id": "603126",
     "course_name": "데이터사이언스기초",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 2,
     "credits": 3,
     "category": "공통전선",
@@ -328,7 +328,7 @@ window.COURSE_DATA = [
   {
     "course_id": "603119",
     "course_name": "소프트웨어개론",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 2,
     "credits": 3,
     "category": "공통전선",
@@ -360,7 +360,7 @@ window.COURSE_DATA = [
   {
     "course_id": "603121",
     "course_name": "신호및시스템",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 2,
     "credits": 3,
     "category": "공통전선",
@@ -394,7 +394,7 @@ window.COURSE_DATA = [
   {
     "course_id": "506702",
     "course_name": "웹프로그래밍",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 2,
     "credits": 3,
     "category": "공통전선",
@@ -436,7 +436,7 @@ window.COURSE_DATA = [
   {
     "course_id": "603146",
     "course_name": "인공지능생체시스템개론",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 2,
     "credits": 3,
     "category": "공통전선",
@@ -472,7 +472,7 @@ window.COURSE_DATA = [
   {
     "course_id": "511643",
     "course_name": "자료구조",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 2,
     "credits": 3,
     "category": "공통전선",
@@ -508,7 +508,7 @@ window.COURSE_DATA = [
   {
     "course_id": "603108",
     "course_name": "파이썬과학프로그래밍기초",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 2,
     "credits": 3,
     "category": "공통전선",
@@ -543,7 +543,7 @@ window.COURSE_DATA = [
   {
     "course_id": "602106",
     "course_name": "IOT네트워크",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 3,
     "credits": 3,
     "category": "공통전선",
@@ -577,7 +577,7 @@ window.COURSE_DATA = [
   {
     "course_id": "601108",
     "course_name": "가상현실과증강현실",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 3,
     "credits": 3,
     "category": "공통전선",
@@ -614,7 +614,7 @@ window.COURSE_DATA = [
   {
     "course_id": "603128",
     "course_name": "계산이론",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 3,
     "credits": 3,
     "category": "공통전선",
@@ -649,7 +649,7 @@ window.COURSE_DATA = [
   {
     "course_id": "600001",
     "course_name": "데이터마이닝",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 3,
     "credits": 3,
     "category": "공통전선",
@@ -688,7 +688,7 @@ window.COURSE_DATA = [
   {
     "course_id": "600007",
     "course_name": "데이터베이스시스템",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 3,
     "credits": 3,
     "category": "공통전선",
@@ -727,7 +727,7 @@ window.COURSE_DATA = [
   {
     "course_id": "600008",
     "course_name": "데이터시각화",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 3,
     "credits": 3,
     "category": "공통전선",
@@ -760,7 +760,7 @@ window.COURSE_DATA = [
   {
     "course_id": "506209",
     "course_name": "머신러닝",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 3,
     "credits": 3,
     "category": "공통전선",
@@ -799,7 +799,7 @@ window.COURSE_DATA = [
   {
     "course_id": "602107",
     "course_name": "모바일센서공학",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 3,
     "credits": 3,
     "category": "공통전선",
@@ -835,7 +835,7 @@ window.COURSE_DATA = [
   {
     "course_id": "603139",
     "course_name": "보안인증기술",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 3,
     "credits": 3,
     "category": "공통전선",
@@ -873,7 +873,7 @@ window.COURSE_DATA = [
   {
     "course_id": "603127",
     "course_name": "소프트웨어특강Ⅰ",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 3,
     "credits": 3,
     "category": "공통전선",
@@ -909,7 +909,7 @@ window.COURSE_DATA = [
   {
     "course_id": "506714",
     "course_name": "영상처리프로그래밍",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 3,
     "credits": 3,
     "category": "공통전선",
@@ -950,7 +950,7 @@ window.COURSE_DATA = [
   {
     "course_id": "506314",
     "course_name": "운영체제",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 3,
     "credits": 3,
     "category": "공통전선",
@@ -985,7 +985,7 @@ window.COURSE_DATA = [
   {
     "course_id": "603135",
     "course_name": "웹서버구축",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 3,
     "credits": 3,
     "category": "공통전선",
@@ -1030,7 +1030,7 @@ window.COURSE_DATA = [
   {
     "course_id": "506703",
     "course_name": "윈도우프로그래밍",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 3,
     "credits": 3,
     "category": "공통전선",
@@ -1069,7 +1069,7 @@ window.COURSE_DATA = [
   {
     "course_id": "515103",
     "course_name": "정보보호론",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 3,
     "credits": 3,
     "category": "공통전선",
@@ -1106,7 +1106,7 @@ window.COURSE_DATA = [
   {
     "course_id": "506419",
     "course_name": "컴퓨터그래픽스",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 3,
     "credits": 3,
     "category": "공통전선",
@@ -1150,7 +1150,7 @@ window.COURSE_DATA = [
   {
     "course_id": "514126",
     "course_name": "컴퓨터네트워크",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 3,
     "credits": 3,
     "category": "공통전선",
@@ -1188,7 +1188,7 @@ window.COURSE_DATA = [
   {
     "course_id": "506319",
     "course_name": "프로그래밍어론",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 3,
     "credits": 3,
     "category": "공통전선",
@@ -1224,7 +1224,7 @@ window.COURSE_DATA = [
   {
     "course_id": "506836",
     "course_name": "HCI",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 4,
     "credits": 3,
     "category": "공통전선",
@@ -1257,7 +1257,7 @@ window.COURSE_DATA = [
   {
     "course_id": "603144",
     "course_name": "강화학습",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 4,
     "credits": 3,
     "category": "공통전선",
@@ -1305,7 +1305,7 @@ window.COURSE_DATA = [
   {
     "course_id": "603130",
     "course_name": "시스템보안",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 4,
     "credits": 3,
     "category": "공통전선",
@@ -1349,7 +1349,7 @@ window.COURSE_DATA = [
   {
     "course_id": "603132",
     "course_name": "통신네트워크시스템",
-    "department": "소프트웨어학부",
+    "department": "정보과학대학",
     "grade_level": 4,
     "credits": 3,
     "category": "공통전선",
@@ -2814,7 +2814,7 @@ window.COURSE_DATA = [
   },
   {
     "course_id": "701009",
-    "course_name": "어드벤쳐디자인:공",
+    "course_name": "어드벤쳐디자인:공공데이터의이해",
     "department": "정보과학대학",
     "grade_level": 0,
     "credits": 3,
@@ -20055,7 +20055,6 @@ window.DEPARTMENT_LIST = [
   "미래융합스쿨",
   "반도체·디스플레이공학과",
   "사회과학대학",
-  "소프트웨어학부",
   "인문대학",
   "자연과학대학",
   "자유전공학부",
@@ -20063,7 +20062,7 @@ window.DEPARTMENT_LIST = [
 ];
 
 window.COURSE_BY_DEPT = {
-  "소프트웨어학부": [
+  "정보과학대학": [
     "685033",
     "605000",
     "511601",
@@ -20100,7 +20099,39 @@ window.COURSE_BY_DEPT = {
     "506836",
     "603144",
     "603130",
-    "603132"
+    "603132",
+    "701005",
+    "701009",
+    "701021",
+    "701030",
+    "670000",
+    "710000",
+    "710004",
+    "710014",
+    "710025",
+    "710045",
+    "712030",
+    "729002",
+    "729015",
+    "729016",
+    "729017",
+    "729020",
+    "729023",
+    "729027",
+    "729029",
+    "729030",
+    "729033",
+    "768001",
+    "768003",
+    "773001",
+    "904401",
+    "701015",
+    "505570",
+    "701016",
+    "712000",
+    "712034",
+    "712035",
+    "712036"
   ],
   "자연과학대학": [
     "005073",
@@ -20402,40 +20433,6 @@ window.COURSE_BY_DEPT = {
     "105442",
     "105444",
     "655008"
-  ],
-  "정보과학대학": [
-    "701005",
-    "701009",
-    "701021",
-    "701030",
-    "670000",
-    "710000",
-    "710004",
-    "710014",
-    "710025",
-    "710045",
-    "712030",
-    "729002",
-    "729015",
-    "729016",
-    "729017",
-    "729020",
-    "729023",
-    "729027",
-    "729029",
-    "729030",
-    "729033",
-    "768001",
-    "768003",
-    "773001",
-    "904401",
-    "701015",
-    "505570",
-    "701016",
-    "712000",
-    "712034",
-    "712035",
-    "712036"
   ],
   "경영대학": [
     "504149",

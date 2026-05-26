@@ -66,7 +66,7 @@ CourPath/
 **Request:**
 ```json
 {
-  "department": "소프트웨어학부",
+  "department": "정보과학대학",
   "grade": 3,
   "job_subcategory": "백엔드 개발자",
   "completed_courses": ["685033", "605000"],
