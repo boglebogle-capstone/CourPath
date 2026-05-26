@@ -148,17 +148,17 @@ export default function Step5({ formData, onPrev, onRestart }) {
             </div>
           </div>
           <div style={st.bannerRight}>
-            <div style={{ ...st.scoreTag, borderColor: '#28a745' }}>
+            <div style={{ ...st.scoreTag, borderColor: '#28a745', cursor: 'help' }} title="목표 직무와 연관도가 높아 수강을 적극 추천하는 과목입니다.">
               시너지 <span style={{ color: '#28a745', fontWeight: 'bold' }}>{summary.시너지}</span>
             </div>
-            <div style={{ ...st.scoreTag, borderColor: '#fd7e14' }}>
+            <div style={{ ...st.scoreTag, borderColor: '#fd7e14', cursor: 'help' }} title="목표 직무와 직접적 연관은 낮지만, 기초 역량 강화에 도움이 될 수 있는 과목입니다.">
               보통 <span style={{ color: '#fd7e14', fontWeight: 'bold' }}>{summary.보통}</span>
             </div>
-            <div style={{ ...st.scoreTag, borderColor: '#dc3545' }}>
+            <div style={{ ...st.scoreTag, borderColor: '#dc3545', cursor: 'help' }} title="목표 직무와 연관도가 낮아 다른 과목으로 대체를 권장하는 과목입니다.">
               충돌 <span style={{ color: '#dc3545', fontWeight: 'bold' }}>{summary.충돌}</span>
             </div>
             {summary.선수과목_미충족 > 0 && (
-              <div style={{ ...st.scoreTag, borderColor: '#6f42c1' }}>
+              <div style={{ ...st.scoreTag, borderColor: '#6f42c1', cursor: 'help' }} title="수강에 필요한 선수과목을 아직 이수하지 않은 과목입니다.">
                 선수과목 미충족 <span style={{ color: '#6f42c1', fontWeight: 'bold' }}>{summary.선수과목_미충족}</span>
               </div>
             )}
