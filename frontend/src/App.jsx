@@ -1,32 +1,73 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import Intro from './components/Intro';
 import Step1 from './components/Step1';
 import Step2 from './components/Step2';
 import Step3 from './components/Step3';
 import Step4 from './components/Step4';
-import Step5 from './components/Step5'; 
+import Step5 from './components/Step5';
+
+const CACHE_KEY = 'courpath_formData';
+const CACHE_STEP_KEY = 'courpath_step';
+const CACHE_TTL = 30 * 60 * 1000; // 30분
+
+function loadCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const { data, step, timestamp } = JSON.parse(raw);
+    if (Date.now() - timestamp > CACHE_TTL) {
+      localStorage.removeItem(CACHE_KEY);
+      localStorage.removeItem(CACHE_STEP_KEY);
+      return null;
+    }
+    return { data, step };
+  } catch { return null; }
+}
+
+function saveCache(data, step) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ data, step, timestamp: Date.now() }));
+  } catch {}
+}
+
+function clearCache() {
+  localStorage.removeItem(CACHE_KEY);
+  localStorage.removeItem(CACHE_STEP_KEY);
+}
+
+const INITIAL_FORM = {
+  major: '',
+  majorDetail: '',
+  minor: '',
+  minorDetail: '',
+  grade: '',
+  majorCourses: [],
+  minorCourses: [],
+  otherCourses: [],
+  nextSemesterCourses: [],
+  jobCategory: '',
+  jobSub: '',
+};
 
 export default function App() {
-  const [step, setStep] = useState(1);
-  
-  // 전체 단계를 관통하는 마스터 데이터 주머니
-  const [formData, setFormData] = useState({
-    major: '',              // 주전공 (대분류 - 단과대학)
-    majorDetail: '',        // 주전공 (소분류 - 학과)
-    minor: '',              // 복수전공 (대분류)
-    minorDetail: '',        // 복수전공 (소분류)
-    grade: '',              // 학년
-    majorCourses: [],       // 주전공 기이수 과목
-    minorCourses: [],       // 복수전공 기이수 과목
-    otherCourses: [],       // 타전공/기타 기이수 과목
-    nextSemesterCourses: [],// 다음 학기 예정 과목
-    jobCategory: '',        // 직무 대분류
-    jobSub: '',             // 세부 직무
-  });
+  const cached = loadCache();
+  const [step, setStep] = useState(cached ? cached.step : 0);
+  const [formData, setFormData] = useState(cached ? cached.data : { ...INITIAL_FORM });
+
+  // 캐시 자동 저장 (step, formData 변경 시)
+  useEffect(() => {
+    if (step >= 1) saveCache(formData, step);
+  }, [formData, step]);
 
   const onNext = () => setStep((p) => p + 1);
   const onPrev = () => setStep((p) => p - 1);
 
-  // 5단계 흐름 인덱스 맵
+  const handleRestart = useCallback(() => {
+    clearCache();
+    setFormData({ ...INITIAL_FORM });
+    setStep(0);
+  }, []);
+
   const STEP_NAMES = [
     '기본 정보 입력',
     '기이수 과목 선택',
@@ -35,19 +76,24 @@ export default function App() {
     '분석 결과'
   ];
 
+  // 소개 페이지
+  if (step === 0) {
+    return <Intro onStart={() => setStep(1)} cachedExists={!!cached} />;
+  }
+
   return (
     <div style={{ maxWidth: '1100px', margin: '4px auto', padding: '20px', fontFamily: 'sans-serif', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      
-      {/* ── 1. 5단계 상단 인덱스 바 ── */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '30px', borderBottom: '1px solid #e9ecef', paddingBottom: '15px' }}>
+
+      {/* 상단 인덱스 바 */}
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '30px', borderBottom: '1px solid #e9ecef', paddingBottom: '15px', alignItems: 'center' }}>
         {STEP_NAMES.map((name, idx) => {
           const currentIdx = idx + 1;
           const isActive = step === currentIdx;
           return (
             <div key={name} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ 
-                fontSize: '14px', 
-                fontWeight: isActive ? 'bold' : 'normal', 
+              <span style={{
+                fontSize: '14px',
+                fontWeight: isActive ? 'bold' : 'normal',
                 color: isActive ? '#0d6efd' : '#adb5bd',
                 borderBottom: isActive ? '2px solid #0d6efd' : 'none',
                 paddingBottom: '4px'
@@ -60,16 +106,16 @@ export default function App() {
         })}
       </div>
 
-      {/* ── 2. 중앙 스텝 조건부 라우팅 구역 (실제 본문 콘텐츠) ── */}
+      {/* 중앙 콘텐츠 */}
       <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '10px', flex: 1 }}>
-        {step === 1 && <Step1 formData={formData} setFormData={setFormData} onNext={onNext} />}
-        {step === 2 && <Step2 formData={formData} setFormData={setFormData} onNext={onNext} onPrev={onPrev} />}
-        {step === 3 && <Step3 formData={formData} setFormData={setFormData} onNext={onNext} onPrev={onPrev} />}
-        {step === 4 && <Step4 formData={formData} onNext={onNext} onPrev={onPrev} />}
-        {step === 5 && <Step5 formData={formData} onPrev={onPrev} />}
+        {step === 1 && <Step1 formData={formData} setFormData={setFormData} onNext={onNext} onRestart={handleRestart} />}
+        {step === 2 && <Step2 formData={formData} setFormData={setFormData} onNext={onNext} onPrev={onPrev} onRestart={handleRestart} />}
+        {step === 3 && <Step3 formData={formData} setFormData={setFormData} onNext={onNext} onPrev={onPrev} onRestart={handleRestart} />}
+        {step === 4 && <Step4 formData={formData} onNext={onNext} onPrev={onPrev} onRestart={handleRestart} />}
+        {step === 5 && <Step5 formData={formData} onPrev={onPrev} onRestart={handleRestart} />}
       </div>
 
-      {/* ── 3. 🔥 [요청 반영] 전 화면 공통 하단 푸터 표기 구역 ── */}
+      {/* 하단 푸터 */}
       <div style={{
         marginTop: '60px',
         paddingTop: '20px',

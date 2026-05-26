@@ -260,6 +260,7 @@ def run_analysis(db: Session, req: AnalyzeRequest) -> AnalyzeResponse:
         RecommendationOut(
             course_id=c["course_id"],
             course_name=c["course_name"],
+            department=c.get("department", ""),
             similarity_score=c["similarity_score"],
             reason=friendly_reason(req.job_subcategory, c["similarity_score"]),
         )

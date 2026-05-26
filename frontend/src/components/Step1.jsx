@@ -16,7 +16,7 @@ const COLLEGE_LIST = [
   '정보과학대학',
 ].sort((a, b) => a.localeCompare(b, 'ko'));
 
-export default function Step1({ formData, setFormData, onNext }) {
+export default function Step1({ formData, setFormData, onNext, onRestart }) {
   const [courseDataReady, setCourseDataReady] = useState(false); // eslint-disable-line no-unused-vars
 
   const isFormValid =
@@ -128,13 +128,14 @@ export default function Step1({ formData, setFormData, onNext }) {
       </div>
 
       <div style={styles.footer}>
+        <button style={styles.restartBtn} onClick={onRestart}>처음부터 시작</button>
         <button style={{
           ...styles.nextButton,
           backgroundColor: isFormValid ? '#0d6efd' : '#e9ecef',
           color: isFormValid ? '#fff' : '#adb5bd',
           cursor: isFormValid ? 'pointer' : 'not-allowed'
         }} disabled={!isFormValid} onClick={onNext}>
-          다음 단계로 &rarr;
+          다음 단계 &rarr;
         </button>
       </div>
     </div>
@@ -155,6 +156,7 @@ const styles = {
   select: { padding: '12px 16px', borderRadius: '8px', border: '1px solid #ced4da', fontSize: '15px', outline: 'none', cursor: 'pointer', backgroundColor: '#fff' },
   gradeContainer: { display: 'flex', gap: '12px', width: '100%' },
   gradeCard: { flex: 1, padding: '14px 0', borderRadius: '8px', textAlign: 'center', cursor: 'pointer', fontSize: '15px', transition: 'all 0.2s ease-in-out' },
-  footer: { marginTop: '40px', display: 'flex', justifyContent: 'flex-end' },
+  footer: { marginTop: '40px', display: 'flex', justifyContent: 'space-between' },
+  restartBtn: { padding: '12px 20px', borderRadius: '8px', border: '1px solid #ced4da', backgroundColor: '#fff', color: '#6c757d', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' },
   nextButton: { padding: '12px 24px', borderRadius: '8px', border: 'none', fontSize: '16px', fontWeight: 'bold', transition: 'all 0.2s' }
 };

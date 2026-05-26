@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 
 const getCourseId = (c) => c?.id ?? c?.course_id ?? c?.course_code ?? '';
 
-export default function Step5({ formData, onPrev }) {
+export default function Step5({ formData, onPrev, onRestart }) {
   const [loading, setLoading] = useState(true);
   const [resultData, setResultData] = useState(null);
   const [error, setError] = useState(null);
+  const resultRef = useRef(null);
 
-  // 과목ID → 과목명 매핑 (선수과목 표시용)
   const courseIdToName = useMemo(() => {
     const map = {};
     const allCourses = [
@@ -20,7 +20,6 @@ export default function Step5({ formData, onPrev }) {
       const id = getCourseId(c);
       if (id && c.course_name) map[id] = c.course_name;
     });
-    // window.COURSE_DATA에서도 매핑
     if (window.COURSE_DATA) {
       window.COURSE_DATA.forEach(c => {
         const id = c.course_id ?? c.course_code ?? '';
@@ -37,9 +36,7 @@ export default function Step5({ formData, onPrev }) {
         const minorCourses = formData.minorCourses || [];
         const otherCourses = formData.otherCourses || [];
         const nextSemesterCourses = formData.nextSemesterCourses || [];
-
         const gradeNum = parseInt(String(formData.grade).replace(/[^0-9]/g, '')) || 3;
-
         const body = {
           department: formData.major,
           grade: gradeNum,
@@ -47,18 +44,15 @@ export default function Step5({ formData, onPrev }) {
           completed_courses: [...majorCourses, ...minorCourses, ...otherCourses].map(c => getCourseId(c)).filter(Boolean),
           planned_courses: nextSemesterCourses.map(c => getCourseId(c)).filter(Boolean),
         };
-
         const response = await fetch('/api/analyze', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
         });
-
         if (!response.ok) {
           const errText = await response.text();
           throw new Error(`서버 오류 (${response.status}): ${errText}`);
         }
-
         const data = await response.json();
         setResultData(data);
       } catch (err) {
@@ -68,12 +62,24 @@ export default function Step5({ formData, onPrev }) {
         setLoading(false);
       }
     };
-
     fetchAnalysis();
   }, [formData]);
 
-  // 선수과목 ID를 과목명으로 변환
   const prereqToName = (prereqId) => courseIdToName[prereqId] || prereqId;
+
+  // 결과 페이지 저장 기능
+  const handleSave = () => {
+    const el = resultRef.current;
+    if (!el) return;
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>CourPath 분석 결과</title><style>body{font-family:sans-serif;max-width:900px;margin:20px auto;padding:20px;color:#212529}table{width:100%;border-collapse:collapse;margin:10px 0}th,td{border:1px solid #dee2e6;padding:10px;text-align:left;font-size:13px}th{background:#f8f9fa;font-weight:bold}.synergy{color:#28a745}.normal{color:#fd7e14}.conflict{color:#dc3545}</style></head><body>${el.innerHTML}</body></html>`;
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `CourPath_분석결과_${formData.jobSub || 'result'}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   if (loading) {
     return (
@@ -98,8 +104,6 @@ export default function Step5({ formData, onPrev }) {
   const { job_category, job_subcategory, results, recommendations, summary } = resultData;
 
   const synergyResults = results.filter(r => r.verdict === '시너지');
-  // eslint-disable-next-line no-unused-vars
-  const normalResults = results.filter(r => r.verdict === '보통');
   const conflictResults = results.filter(r => r.verdict === '충돌');
   const prereqFailed = results.filter(r => !r.prerequisite_ok);
 
@@ -114,7 +118,6 @@ export default function Step5({ formData, onPrev }) {
   const verdictColor = (v) => v === '시너지' ? '#28a745' : v === '보통' ? '#fd7e14' : '#dc3545';
   const verdictBg = (v) => v === '시너지' ? '#f0fff4' : v === '보통' ? '#fff8f0' : '#fff5f5';
 
-  // "임베딩 유사도" → "직무 연관도"로 변환
   const cleanReason = (reason) => {
     return reason
       .replace(/임베딩\s*(유사도)?/g, '직무 연관도')
@@ -123,177 +126,190 @@ export default function Step5({ formData, onPrev }) {
 
   return (
     <div>
-      <div style={st.header}>
-        <h2 style={st.title}>5. AI 분석 결과</h2>
-        <p style={st.subtitle}>
-          [{job_category} &rarr; {job_subcategory}] 직무 기준으로 수강 이력과 예정 과목을 분석한 결과입니다.
-        </p>
-      </div>
-
-      {/* 종합 판정 요약 */}
-      <div style={{
-        ...st.summaryBanner,
-        backgroundColor: summary.충돌 > 0 ? '#fff5f5' : '#f0f9ff',
-        borderColor: summary.충돌 > 0 ? '#ffc1c1' : '#b2dfff'
-      }}>
-        <div style={st.bannerLeft}>
-          <div style={st.bannerStatus}>{getOverallMessage()}</div>
-          <div style={st.bannerMeta}>
-            다음 학기 설계 학점: <span style={{ fontWeight: 'bold', color: '#0d6efd' }}>{totalPlanned}학점</span>
-            {' / '}분석 과목 수: <span style={{ fontWeight: 'bold' }}>{results.length}개</span>
-          </div>
+      <div ref={resultRef}>
+        <div style={st.header}>
+          <h2 style={st.title}>5. AI 분석 결과</h2>
+          <p style={st.subtitle}>
+            [{job_category} &rarr; {job_subcategory}] 직무 기준으로 수강 이력과 예정 과목을 분석한 결과입니다.
+          </p>
         </div>
-        <div style={st.bannerRight}>
-          <div style={{ ...st.scoreTag, borderColor: '#28a745' }}>
-            시너지 <span style={{ color: '#28a745', fontWeight: 'bold' }}>{summary.시너지}</span>
-          </div>
-          <div style={{ ...st.scoreTag, borderColor: '#fd7e14' }}>
-            보통 <span style={{ color: '#fd7e14', fontWeight: 'bold' }}>{summary.보통}</span>
-          </div>
-          <div style={{ ...st.scoreTag, borderColor: '#dc3545' }}>
-            충돌 <span style={{ color: '#dc3545', fontWeight: 'bold' }}>{summary.충돌}</span>
-          </div>
-          {summary.선수과목_미충족 > 0 && (
-            <div style={{ ...st.scoreTag, borderColor: '#6f42c1' }}>
-              선수과목 미충족 <span style={{ color: '#6f42c1', fontWeight: 'bold' }}>{summary.선수과목_미충족}</span>
+
+        {/* 종합 판정 요약 */}
+        <div style={{
+          ...st.summaryBanner,
+          backgroundColor: summary.충돌 > 0 ? '#fff5f5' : '#f0f9ff',
+          borderColor: summary.충돌 > 0 ? '#ffc1c1' : '#b2dfff'
+        }}>
+          <div style={st.bannerLeft}>
+            <div style={st.bannerStatus}>{getOverallMessage()}</div>
+            <div style={st.bannerMeta}>
+              다음 학기 설계 학점: <span style={{ fontWeight: 'bold', color: '#0d6efd' }}>{totalPlanned}학점</span>
+              {' / '}분석 과목 수: <span style={{ fontWeight: 'bold' }}>{results.length}개</span>
             </div>
-          )}
-        </div>
-      </div>
-
-      {/* 예정 과목별 상세 분석 */}
-      <div style={{ ...st.card, marginBottom: '20px' }}>
-        <h3 style={st.cardTitle}>예정 과목별 직무 매칭 상세 분석</h3>
-        <table style={st.table}>
-          <thead>
-            <tr style={st.thRow}>
-              <th style={st.th}>과목명</th>
-              <th style={st.th}>직무 연관도</th>
-              <th style={st.th}>판정</th>
-              <th style={st.th}>선수과목</th>
-              <th style={st.th}>분석 사유</th>
-            </tr>
-          </thead>
-          <tbody>
-            {results.map((r, idx) => (
-              <tr key={idx} style={st.tr}>
-                <td style={{ ...st.td, fontWeight: '600' }}>{r.course_name}</td>
-                <td style={{ ...st.td, color: '#0d6efd', fontWeight: 'bold' }}>
-                  {(r.similarity_score * 100).toFixed(1)}%
-                </td>
-                <td style={st.td}>
-                  <span style={{
-                    padding: '3px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold',
-                    color: verdictColor(r.verdict), backgroundColor: verdictBg(r.verdict),
-                    border: `1px solid ${verdictColor(r.verdict)}30`
-                  }}>
-                    {r.verdict}
-                  </span>
-                </td>
-                <td style={st.td}>
-                  {r.prerequisite_ok
-                    ? <span style={{ color: '#28a745', fontSize: '13px' }}>충족</span>
-                    : <span style={{ color: '#dc3545', fontSize: '12px' }}>미충족: {r.missing_prerequisites.map(prereqToName).join(', ')}</span>
-                  }
-                </td>
-                <td style={{ ...st.td, color: '#6c757d', fontSize: '13px', maxWidth: '300px' }}>{cleanReason(r.reason)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div style={st.grid2Col}>
-        {/* 시너지 과목 */}
-        <div style={st.card}>
-          <h3 style={st.cardTitle}>시너지 과목 (직무 연관성 높음)</h3>
-          <div style={st.listBox}>
-            {synergyResults.length === 0 ? (
-              <div style={st.emptyText}>시너지 판정된 과목이 없습니다.</div>
-            ) : (
-              synergyResults.map((r, i) => (
-                <div key={i} style={st.synergyItem}>
-                  <div>
-                    <div style={{ fontWeight: '600', fontSize: '14px', color: '#22543d' }}>{r.course_name}</div>
-                    <div style={{ fontSize: '12px', color: '#38a169', marginTop: '2px' }}>
-                      연관도 {(r.similarity_score * 100).toFixed(1)}% - {cleanReason(r.reason).split('|')[0].trim()}
-                    </div>
-                  </div>
-                </div>
-              ))
+          </div>
+          <div style={st.bannerRight}>
+            <div style={{ ...st.scoreTag, borderColor: '#28a745' }}>
+              시너지 <span style={{ color: '#28a745', fontWeight: 'bold' }}>{summary.시너지}</span>
+            </div>
+            <div style={{ ...st.scoreTag, borderColor: '#fd7e14' }}>
+              보통 <span style={{ color: '#fd7e14', fontWeight: 'bold' }}>{summary.보통}</span>
+            </div>
+            <div style={{ ...st.scoreTag, borderColor: '#dc3545' }}>
+              충돌 <span style={{ color: '#dc3545', fontWeight: 'bold' }}>{summary.충돌}</span>
+            </div>
+            {summary.선수과목_미충족 > 0 && (
+              <div style={{ ...st.scoreTag, borderColor: '#6f42c1' }}>
+                선수과목 미충족 <span style={{ color: '#6f42c1', fontWeight: 'bold' }}>{summary.선수과목_미충족}</span>
+              </div>
             )}
           </div>
         </div>
 
-        {/* 충돌/주의 과목 */}
-        <div style={st.card}>
-          <h3 style={st.cardTitle}>충돌/주의 과목</h3>
-          <div style={st.listBox}>
-            {conflictResults.length === 0 && prereqFailed.length === 0 ? (
-              <div style={st.emptyText}>충돌 항목이 없습니다.</div>
-            ) : (
-              <>
-                {conflictResults.map((r, i) => (
-                  <div key={`c-${i}`} style={st.dangerItem}>
-                    <div>
-                      <div style={{ fontWeight: '600', fontSize: '14px', color: '#c53030' }}>{r.course_name}</div>
-                      <div style={{ fontSize: '12px', color: '#e53e3e', marginTop: '2px' }}>{cleanReason(r.reason)}</div>
-                    </div>
-                  </div>
-                ))}
-                {prereqFailed.map((r, i) => (
-                  <div key={`p-${i}`} style={{ ...st.dangerItem, borderLeftColor: '#6f42c1', backgroundColor: '#f8f5ff' }}>
-                    <div>
-                      <div style={{ fontWeight: '600', fontSize: '14px', color: '#553c9a' }}>{r.course_name}</div>
-                      <div style={{ fontSize: '12px', color: '#805ad5', marginTop: '2px' }}>
-                        선수과목 미충족: {r.missing_prerequisites.map(prereqToName).join(', ')}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* 추천 과목 */}
-      <div style={{ ...st.card, marginTop: '20px' }}>
-        <h3 style={st.cardTitle}>'{job_subcategory}' 직무 맞춤 추천 과목 (TOP {recommendations.length})</h3>
-        <p style={{ fontSize: '13px', color: '#6c757d', margin: '0 0 12px 0' }}>
-          이수 완료 및 예정 과목을 제외한 미수강 과목 중, 목표 직무와 연관도가 가장 높은 과목입니다.
-        </p>
-        {recommendations.length === 0 ? (
-          <div style={st.emptyText}>추천 가능한 과목이 없습니다.</div>
-        ) : (
+        {/* 예정 과목별 상세 분석 */}
+        <div style={{ ...st.card, marginBottom: '20px' }}>
+          <h3 style={st.cardTitle}>예정 과목별 직무 매칭 상세 분석</h3>
           <table style={st.table}>
             <thead>
               <tr style={st.thRow}>
-                <th style={st.th}>순위</th>
-                <th style={st.th}>추천 과목명</th>
+                <th style={st.th}>과목명</th>
                 <th style={st.th}>직무 연관도</th>
-                <th style={st.th}>추천 근거</th>
+                <th style={st.th}>판정</th>
+                <th style={st.th}>선수과목</th>
+                <th style={st.th}>분석 사유</th>
               </tr>
             </thead>
             <tbody>
-              {recommendations.map((rc, idx) => (
+              {results.map((r, idx) => (
                 <tr key={idx} style={st.tr}>
-                  <td style={{ ...st.td, fontWeight: 'bold', color: '#0d6efd' }}>{idx + 1}위</td>
-                  <td style={{ ...st.td, fontWeight: '600' }}>{rc.course_name}</td>
-                  <td style={{ ...st.td, color: '#28a745', fontWeight: 'bold' }}>
-                    {(rc.similarity_score * 100).toFixed(1)}%
+                  <td style={{ ...st.td, fontWeight: '600' }}>{r.course_name}</td>
+                  <td style={{ ...st.td, color: '#0d6efd', fontWeight: 'bold' }}>
+                    {(r.similarity_score * 100).toFixed(1)}%
                   </td>
-                  <td style={{ ...st.td, color: '#6c757d', fontSize: '13px' }}>{cleanReason(rc.reason)}</td>
+                  <td style={st.td}>
+                    <span style={{
+                      padding: '3px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold',
+                      color: verdictColor(r.verdict), backgroundColor: verdictBg(r.verdict),
+                      border: `1px solid ${verdictColor(r.verdict)}30`
+                    }}>
+                      {r.verdict}
+                    </span>
+                  </td>
+                  <td style={st.td}>
+                    {r.prerequisite_ok
+                      ? <span style={{ color: '#28a745', fontSize: '13px' }}>충족</span>
+                      : <span style={{ color: '#dc3545', fontSize: '12px' }}>미충족: {r.missing_prerequisites.map(prereqToName).join(', ')}</span>
+                    }
+                  </td>
+                  <td style={{ ...st.td, color: '#6c757d', fontSize: '13px', maxWidth: '300px' }}>{cleanReason(r.reason)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-        )}
+        </div>
+
+        <div style={st.grid2Col}>
+          {/* 시너지 과목 */}
+          <div style={st.card}>
+            <h3 style={st.cardTitle}>시너지 과목 (직무 연관성 높음)</h3>
+            <div style={st.listBox}>
+              {synergyResults.length === 0 ? (
+                <div style={st.emptyText}>시너지 판정된 과목이 없습니다.</div>
+              ) : (
+                synergyResults.map((r, i) => (
+                  <div key={i} style={st.synergyItem}>
+                    <div>
+                      <div style={{ fontWeight: '600', fontSize: '14px', color: '#22543d' }}>{r.course_name}</div>
+                      <div style={{ fontSize: '12px', color: '#38a169', marginTop: '2px' }}>
+                        연관도 {(r.similarity_score * 100).toFixed(1)}% - {cleanReason(r.reason).split('|')[0].trim()}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* 충돌/주의 과목 */}
+          <div style={st.card}>
+            <h3 style={st.cardTitle}>충돌/주의 과목</h3>
+            <div style={st.listBox}>
+              {conflictResults.length === 0 && prereqFailed.length === 0 ? (
+                <div style={st.emptyText}>충돌 항목이 없습니다.</div>
+              ) : (
+                <>
+                  {conflictResults.map((r, i) => (
+                    <div key={`c-${i}`} style={st.dangerItem}>
+                      <div>
+                        <div style={{ fontWeight: '600', fontSize: '14px', color: '#c53030' }}>{r.course_name}</div>
+                        <div style={{ fontSize: '12px', color: '#e53e3e', marginTop: '2px' }}>{cleanReason(r.reason)}</div>
+                      </div>
+                    </div>
+                  ))}
+                  {prereqFailed.map((r, i) => (
+                    <div key={`p-${i}`} style={{ ...st.dangerItem, borderLeftColor: '#6f42c1', backgroundColor: '#f8f5ff' }}>
+                      <div>
+                        <div style={{ fontWeight: '600', fontSize: '14px', color: '#553c9a' }}>{r.course_name}</div>
+                        <div style={{ fontSize: '12px', color: '#805ad5', marginTop: '2px' }}>
+                          선수과목 미충족: {r.missing_prerequisites.map(prereqToName).join(', ')}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* 추천 과목 - 단과대 표시 추가 */}
+        <div style={{ ...st.card, marginTop: '20px' }}>
+          <h3 style={st.cardTitle}>'{job_subcategory}' 직무 맞춤 추천 과목 (TOP {recommendations.length})</h3>
+          <p style={{ fontSize: '13px', color: '#6c757d', margin: '0 0 12px 0' }}>
+            이수 완료 및 예정 과목을 제외한 미수강 과목 중, 목표 직무와 연관도가 가장 높은 과목입니다.
+          </p>
+          {recommendations.length === 0 ? (
+            <div style={st.emptyText}>추천 가능한 과목이 없습니다.</div>
+          ) : (
+            <table style={st.table}>
+              <thead>
+                <tr style={st.thRow}>
+                  <th style={st.th}>순위</th>
+                  <th style={st.th}>추천 과목명</th>
+                  <th style={st.th}>소속</th>
+                  <th style={st.th}>직무 연관도</th>
+                  <th style={st.th}>추천 근거</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recommendations.map((rc, idx) => (
+                  <tr key={idx} style={st.tr}>
+                    <td style={{ ...st.td, fontWeight: 'bold', color: '#0d6efd' }}>{idx + 1}위</td>
+                    <td style={{ ...st.td, fontWeight: '600' }}>{rc.course_name}</td>
+                    <td style={st.td}>
+                      {rc.department && (
+                        <span style={{ backgroundColor: '#e8f4fd', color: '#0d6efd', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '600' }}>
+                          {rc.department}
+                        </span>
+                      )}
+                    </td>
+                    <td style={{ ...st.td, color: '#28a745', fontWeight: 'bold' }}>
+                      {(rc.similarity_score * 100).toFixed(1)}%
+                    </td>
+                    <td style={{ ...st.td, color: '#6c757d', fontSize: '13px' }}>{cleanReason(rc.reason)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
 
       <div style={st.footer}>
-        <button style={st.prevBtn} onClick={onPrev}>&larr; 이전 단계</button>
-        <button style={st.restartBtn} onClick={() => window.location.reload()}>처음부터 다시 분석</button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button style={st.restartBtn} onClick={onRestart}>처음부터 시작</button>
+          <button style={st.prevBtn} onClick={onPrev}>&larr; 이전 단계</button>
+        </div>
+        <button style={st.saveBtn} onClick={handleSave}>결과 저장하기</button>
       </div>
     </div>
   );
@@ -324,7 +340,6 @@ const st = {
   emptyText: { textAlign: 'center', padding: '40px 0', color: '#adb5bd', fontSize: '13px' },
 
   dangerItem: { display: 'flex', gap: '10px', padding: '12px 14px', backgroundColor: '#fff5f5', borderLeft: '4px solid #dc3545', borderRadius: '4px', alignItems: 'flex-start' },
-
   synergyItem: { display: 'flex', gap: '10px', padding: '12px 14px', backgroundColor: '#f0fff4', borderLeft: '4px solid #28a745', borderRadius: '4px', alignItems: 'flex-start' },
 
   table: { width: '100%', borderCollapse: 'collapse', marginTop: '10px' },
@@ -334,8 +349,9 @@ const st = {
   td: { padding: '12px 10px', fontSize: '14px', color: '#212529' },
 
   footer: { marginTop: '30px', display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #dee2e6', paddingTop: '18px' },
+  restartBtn: { padding: '11px 16px', borderRadius: '8px', border: '1px solid #ced4da', backgroundColor: '#fff', color: '#6c757d', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' },
   prevBtn: { padding: '11px 20px', borderRadius: '8px', border: '1px solid #ced4da', backgroundColor: '#fff', color: '#495057', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' },
-  restartBtn: { padding: '11px 22px', borderRadius: '8px', border: 'none', backgroundColor: '#6c757d', color: '#fff', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }
+  saveBtn: { padding: '11px 22px', borderRadius: '8px', border: 'none', backgroundColor: '#28a745', color: '#fff', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }
 };
 
 if (typeof document !== 'undefined') {

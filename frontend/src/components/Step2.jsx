@@ -3,10 +3,11 @@ import '../data/courses_all.js';
 
 const getCourseId = (c) => c?.course_id ?? c?.course_code ?? c?.['과목코드'] ?? '';
 
-export default function Step2({ formData, setFormData, onNext, onPrev }) {
+export default function Step2({ formData, setFormData, onNext, onPrev, onRestart }) {
   const [courses, setCourses] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [mainTab, setMainTab] = useState('major'); // 'major' | 'minor' | 'other'
+  const [mainTab, setMainTab] = useState('major');
+  const [sortBy, setSortBy] = useState('name'); // 'name' | 'grade'
 
   useEffect(() => {
     if (window.COURSE_DATA?.length > 0) setCourses(window.COURSE_DATA);
@@ -23,7 +24,6 @@ export default function Step2({ formData, setFormData, onNext, onPrev }) {
   const minorIdSet = useMemo(() => new Set(minorCourses.map(getCourseId)), [minorCourses]);
   const otherIdSet = useMemo(() => new Set(otherCourses.map(getCourseId)), [otherCourses]);
 
-  // 현재 탭에 따른 활성 상태
   const activeDept = mainTab === 'major' ? (formData.major ?? '') : mainTab === 'minor' ? (formData.minor ?? '') : '';
   const activeDetail = mainTab === 'major' ? (formData.majorDetail ?? '') : mainTab === 'minor' ? (formData.minorDetail ?? '') : '타전공/기타';
   const activeCourses = mainTab === 'major' ? majorCourses : mainTab === 'minor' ? minorCourses : otherCourses;
@@ -35,14 +35,11 @@ export default function Step2({ formData, setFormData, onNext, onPrev }) {
   const otherCredits = useMemo(() => otherCourses.reduce((sum, c) => sum + (c.credits ?? 3), 0), [otherCourses]);
   const totalCredits = majorCredits + minorCredits + otherCredits;
 
-  // 과목 리스트 생성
   const allDeptCourses = useMemo(() => {
     if (courses.length === 0) return [];
     const seenKeys = new Set();
     const list = [];
-
     if (mainTab === 'other') {
-      // 타전공: 주전공 + 복수전공 학과 제외한 전체
       const excludeDepts = new Set([formData.major, formData.minor].filter(Boolean));
       courses.forEach(course => {
         const dept = (course.department ?? '').trim();
@@ -66,17 +63,23 @@ export default function Step2({ formData, setFormData, onNext, onPrev }) {
     return list;
   }, [courses, mainTab, activeDept, formData.major, formData.minor]);
 
-  // 검색 필터
   const filteredCourses = useMemo(() => {
-    if (!searchTerm) return allDeptCourses;
-    const q = searchTerm.toLowerCase();
-    return allDeptCourses.filter(c =>
-      c.course_name?.toLowerCase().includes(q) ||
-      String(c.course_id ?? '').includes(searchTerm) ||
-      (c.category ?? '').includes(searchTerm) ||
-      (c.department ?? '').includes(searchTerm)
-    );
-  }, [allDeptCourses, searchTerm]);
+    let result = allDeptCourses;
+    if (searchTerm) {
+      const q = searchTerm.toLowerCase();
+      result = result.filter(c =>
+        c.course_name?.toLowerCase().includes(q) ||
+        String(c.course_id ?? '').includes(searchTerm) ||
+        (c.category ?? '').includes(searchTerm) ||
+        (c.department ?? '').includes(searchTerm)
+      );
+    }
+    // 정렬
+    return [...result].sort((a, b) => {
+      if (sortBy === 'grade') return (a.grade_level || 0) - (b.grade_level || 0);
+      return (a.course_name || '').localeCompare(b.course_name || '', 'ko');
+    });
+  }, [allDeptCourses, searchTerm, sortBy]);
 
   const handleToggle = (course) => {
     const id = getCourseId(course);
@@ -107,20 +110,25 @@ export default function Step2({ formData, setFormData, onNext, onPrev }) {
             <TabBtn active={mainTab === 'minor'} color="#6f42c1" disabled={!hasMinor}
               onClick={() => hasMinor && switchMainTab('minor')}>
               복수/부전공 {hasMinor && minorCourses.length > 0 && <Chip active={mainTab === 'minor'}>{minorCourses.length}</Chip>}
-              {!hasMinor && <span style={{ fontSize: '11px', marginLeft: '2px', color: '#adb5bd' }}>🔒</span>}
+              {!hasMinor && <span style={{ fontSize: '11px', marginLeft: '2px', color: '#adb5bd' }}>&#128274;</span>}
             </TabBtn>
             <TabBtn active={mainTab === 'other'} color="#e67e22" onClick={() => switchMainTab('other')}>
               타전공/기타 {otherCourses.length > 0 && <Chip active={mainTab === 'other'}>{otherCourses.length}</Chip>}
             </TabBtn>
-
             <div style={st.deptChip}>
-              <span style={{ color: activeColor }}>●</span> {activeDetail || activeDept || '전공 미선택'}
+              <span style={{ color: activeColor }}>&#9679;</span> {activeDetail || activeDept || '전공 미선택'}
             </div>
           </div>
 
-          <input style={st.search}
-            placeholder={mainTab === 'other' ? '타전공 과목명, 학과명 검색...' : '과목명, 과목코드 검색...'}
-            value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+          <div style={st.controlRow}>
+            <input style={st.search}
+              placeholder={mainTab === 'other' ? '타전공 과목명, 학과명 검색...' : '과목명, 과목코드 검색...'}
+              value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+            <div style={st.sortBtns}>
+              <button style={{ ...st.sortBtn, ...(sortBy === 'name' ? st.sortActive : {}) }} onClick={() => setSortBy('name')}>과목명순</button>
+              <button style={{ ...st.sortBtn, ...(sortBy === 'grade' ? st.sortActive : {}) }} onClick={() => setSortBy('grade')}>수준순</button>
+            </div>
+          </div>
 
           <div style={st.countRow}>
             <span style={{ fontSize: '12px', color: '#868e96' }}>
@@ -160,17 +168,18 @@ export default function Step2({ formData, setFormData, onNext, onPrev }) {
               onRemove={id => setFormData({ ...formData, minorCourses: minorCourses.filter(c => getCourseId(c) !== id) })}
               onClear={() => setFormData({ ...formData, minorCourses: [] })} />
           )}
-          {otherCourses.length > 0 && (
-            <BasketSection label="타전공/기타 기이수" color="#e67e22" courses={otherCourses} credits={otherCredits}
-              onRemove={id => setFormData({ ...formData, otherCourses: otherCourses.filter(c => getCourseId(c) !== id) })}
-              onClear={() => setFormData({ ...formData, otherCourses: [] })} />
-          )}
+          <BasketSection label="타전공/기타 기이수" color="#e67e22" courses={otherCourses} credits={otherCredits}
+            onRemove={id => setFormData({ ...formData, otherCourses: otherCourses.filter(c => getCourseId(c) !== id) })}
+            onClear={() => setFormData({ ...formData, otherCourses: [] })} />
         </div>
       </div>
 
       <div style={st.footer}>
-        <button style={st.prevBtn} onClick={onPrev}>← 이전 단계로</button>
-        <button style={st.nextBtn} onClick={onNext}>다음 단계로 →</button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button style={st.restartBtn} onClick={onRestart}>처음부터 시작</button>
+          <button style={st.prevBtn} onClick={onPrev}>&larr; 이전 단계</button>
+        </div>
+        <button style={st.nextBtn} onClick={onNext}>다음 단계 &rarr;</button>
       </div>
     </div>
   );
@@ -213,7 +222,7 @@ function CourseRow({ course, isSelected, onToggle, color, showDept }) {
         border: `2px solid ${isSelected ? color : '#ced4da'}`, backgroundColor: isSelected ? color : '#fff',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
-        {isSelected && <span style={{ color: '#fff', fontSize: '11px', fontWeight: 'bold' }}>✓</span>}
+        {isSelected && <span style={{ color: '#fff', fontSize: '11px', fontWeight: 'bold' }}>&#10003;</span>}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: '14px', fontWeight: isSelected ? '600' : '500', color: isSelected ? color : '#212529', marginBottom: '3px' }}>
@@ -223,11 +232,11 @@ function CourseRow({ course, isSelected, onToggle, color, showDept }) {
           {showDept && <span style={{ backgroundColor: '#fff3e0', color: '#e67e22', padding: '1px 5px', borderRadius: '3px', fontSize: '10px', fontWeight: '600' }}>{course.department}</span>}
           <span style={{ backgroundColor: '#e9ecef', color: '#495057', padding: '1px 5px', borderRadius: '3px', fontSize: '11px' }}>{course.category ?? '전선'}</span>
           <span style={{ fontSize: '11px', color: '#868e96' }}>{course.credits ?? 3}학점</span>
-          {course.professor && <span style={{ fontSize: '11px', color: '#adb5bd' }}>{course.professor}</span>}
+          {course.grade_level > 0 && <span style={{ fontSize: '11px', color: '#adb5bd' }}>{course.grade_level}학년</span>}
         </div>
       </div>
       <span style={{ fontSize: '12px', fontWeight: '600', color: isSelected ? color : '#ced4da', flexShrink: 0 }}>
-        {isSelected ? '✓ 이수' : '+ 선택'}
+        {isSelected ? '&#10003; 이수' : '+ 선택'}
       </span>
     </div>
   );
@@ -256,7 +265,7 @@ function BasketSection({ label, color, courses, credits, onRemove, onClear }) {
                   <div style={{ fontSize: '12px', fontWeight: '500', color: '#212529', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.course_name ?? ''}</div>
                   <div style={{ fontSize: '10px', color: '#adb5bd', marginTop: '1px' }}>{c.credits ?? 3}학점</div>
                 </div>
-                <button type="button" onClick={() => onRemove(id)} style={{ background: 'none', border: 'none', fontSize: '16px', color: '#adb5bd', cursor: 'pointer', flexShrink: 0 }}>×</button>
+                <button type="button" onClick={() => onRemove(id)} style={{ background: 'none', border: 'none', fontSize: '16px', color: '#adb5bd', cursor: 'pointer', flexShrink: 0 }}>&times;</button>
               </div>
             );
           })}
@@ -274,7 +283,11 @@ const st = {
   left:       { flex: '1 1 0', minWidth: 0 },
   mainTabRow: { display: 'flex', alignItems: 'flex-end', gap: '4px', borderBottom: '2px solid #dee2e6' },
   deptChip:   { marginLeft: 'auto', fontSize: '12px', color: '#495057', backgroundColor: '#f8f9fa', padding: '5px 10px', borderRadius: '6px', border: '1px solid #dee2e6', marginBottom: '4px', maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  search:     { width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #ced4da', fontSize: '13px', outline: 'none', boxSizing: 'border-box', margin: '12px 0 0' },
+  controlRow: { display: 'flex', gap: '10px', alignItems: 'center', margin: '12px 0 0' },
+  search:     { flex: 1, padding: '10px 12px', borderRadius: '8px', border: '1px solid #ced4da', fontSize: '13px', outline: 'none', boxSizing: 'border-box' },
+  sortBtns:   { display: 'flex', gap: '4px', flexShrink: 0 },
+  sortBtn:    { padding: '8px 12px', borderRadius: '6px', border: '1px solid #dee2e6', backgroundColor: '#fff', color: '#868e96', fontSize: '12px', cursor: 'pointer', fontWeight: '500' },
+  sortActive: { backgroundColor: '#0d6efd', color: '#fff', borderColor: '#0d6efd' },
   countRow:   { padding: '6px 0', display: 'flex', justifyContent: 'flex-end' },
   listBox:    { border: '1px solid #e9ecef', borderRadius: '8px', overflow: 'hidden', height: '420px', overflowY: 'auto', backgroundColor: '#fff' },
   empty:      { textAlign: 'center', padding: '50px 20px', color: '#adb5bd', fontSize: '13px' },
@@ -282,6 +295,7 @@ const st = {
   basketHeader:  { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', paddingBottom: '10px', borderBottom: '1px solid #dee2e6' },
   basketTitle:   { fontSize: '15px', fontWeight: 'bold', color: '#212529' },
   footer:  { marginTop: '22px', display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #dee2e6', paddingTop: '18px' },
+  restartBtn: { padding: '11px 16px', borderRadius: '8px', border: '1px solid #ced4da', backgroundColor: '#fff', color: '#6c757d', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' },
   prevBtn: { padding: '11px 20px', borderRadius: '8px', border: '1px solid #ced4da', backgroundColor: '#fff', color: '#495057', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' },
   nextBtn: { padding: '11px 22px', borderRadius: '8px', border: 'none', backgroundColor: '#0d6efd', color: '#fff', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' },
 };

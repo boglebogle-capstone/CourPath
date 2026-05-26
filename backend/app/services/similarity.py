@@ -63,6 +63,7 @@ def get_top_similar_courses(
         results.append({
             "course_id": r.course_id,
             "course_name": course.course_name if course else r.course_id,
+            "department": course.department if course else "",
             "similarity_score": round(r.similarity, 4),
         })
     return results

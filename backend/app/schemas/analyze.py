@@ -22,6 +22,7 @@ class CourseResult(BaseModel):
 class RecommendationOut(BaseModel):
     course_id: str
     course_name: str
+    department: str = ""
     similarity_score: float
     reason: str
 

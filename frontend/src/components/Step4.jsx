@@ -2,7 +2,7 @@ import React from 'react';
 
 const getCourseId = (c) => c?.course_id ?? c?.course_code ?? c?.['과목코드'] ?? '';
 
-export default function Step4({ formData, onNext, onPrev }) {
+export default function Step4({ formData, onNext, onPrev, onRestart }) {
   const majorCourses = formData.majorCourses || [];
   const minorCourses = formData.minorCourses || [];
   const otherCourses = formData.otherCourses || [];
@@ -94,7 +94,10 @@ export default function Step4({ formData, onNext, onPrev }) {
       </div>
 
       <div style={styles.footer}>
-        <button style={styles.prevButton} onClick={onPrev}>&larr; 이전 단계</button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button style={styles.restartBtn} onClick={onRestart}>처음부터 시작</button>
+          <button style={styles.prevButton} onClick={onPrev}>&larr; 이전 단계</button>
+        </div>
         <button style={styles.nextButton} onClick={onNext}>
           분석 실행하기 &rarr;
         </button>
@@ -117,6 +120,7 @@ const styles = {
   chipContainer: { display: 'flex', flexWrap: 'wrap', gap: '6px' },
   chip: { fontSize: '12px', padding: '4px 10px', borderRadius: '14px', border: '1px solid', backgroundColor: '#fff' },
   footer: { marginTop: '30px', display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #dee2e6', paddingTop: '20px' },
+  restartBtn: { padding: '12px 16px', borderRadius: '8px', border: '1px solid #ced4da', backgroundColor: '#fff', color: '#6c757d', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' },
   prevButton: { padding: '12px 20px', borderRadius: '8px', border: '1px solid #ced4da', backgroundColor: '#fff', color: '#495057', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer' },
   nextButton: { padding: '12px 28px', borderRadius: '8px', border: 'none', backgroundColor: '#28a745', color: '#fff', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer' },
 };
