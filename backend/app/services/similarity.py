@@ -57,13 +57,16 @@ def get_top_similar_courses(
     rows = q.order_by(CourseJobSimilarity.similarity.desc()).limit(limit).all()
 
     from app.models.course import Course
+    DEPT_RENAME = {"소프트웨어학부": "정보과학대학"}
     results = []
     for r in rows:
         course = db.query(Course).filter(Course.id == r.course_id).first()
+        dept = course.department if course else ""
+        dept = DEPT_RENAME.get(dept, dept)
         results.append({
             "course_id": r.course_id,
             "course_name": course.course_name if course else r.course_id,
-            "department": course.department if course else "",
+            "department": dept,
             "similarity_score": round(r.similarity, 4),
         })
     return results

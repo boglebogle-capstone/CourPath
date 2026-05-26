@@ -236,7 +236,7 @@ function CourseRow({ course, isSelected, onToggle, color, showDept }) {
         </div>
       </div>
       <span style={{ fontSize: '12px', fontWeight: '600', color: isSelected ? color : '#ced4da', flexShrink: 0 }}>
-        {isSelected ? '&#10003; 이수' : '+ 선택'}
+        {isSelected ? '✓ 이수' : '+ 선택'}
       </span>
     </div>
   );

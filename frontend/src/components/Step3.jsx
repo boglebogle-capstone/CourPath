@@ -155,7 +155,7 @@ export default function Step3({ formData, setFormData, onNext, onPrev, onRestart
                   <div key={getCourseId(course)} onClick={() => handleToggle(course)}
                     style={{...st.row, backgroundColor: isSelected?'#f0f7ff':'transparent'}}>
                     <div style={{...st.circle, backgroundColor: isSelected?activeColor:'#fff', borderColor: isSelected?activeColor:'#ced4da'}}>
-                      {isSelected && '&#10003;'}
+                      {isSelected && '✓'}
                     </div>
                     <div style={{flex:1}}>
                       <div style={st.cName}>{course.course_name}</div>
@@ -181,7 +181,6 @@ export default function Step3({ formData, setFormData, onNext, onPrev, onRestart
             <BasketGroup label="복수/부전공" color="#6f42c1" courses={minorPlanned} onToggle={handleToggle} />
           )}
           <BasketGroup label="타전공/기타" color="#e67e22" courses={otherPlanned} onToggle={handleToggle} />
-          {nextSemesterCourses.length === 0 && <div style={st.bEmpty}>담은 과목이 없습니다.</div>}
         </div>
       </div>
 
@@ -198,23 +197,27 @@ export default function Step3({ formData, setFormData, onNext, onPrev, onRestart
 }
 
 function BasketGroup({ label, color, courses, onToggle }) {
-  if (courses.length === 0) return null;
+  const credits = courses.reduce((s, c) => s + (Number(c.credits) || 3), 0);
   return (
     <div style={{ marginBottom: '12px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '6px' }}>
         <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: color }} />
         <span style={{ fontSize: '12px', fontWeight: '600', color: '#495057' }}>{label}</span>
-        <span style={{ fontSize: '12px', color, fontWeight: 'bold' }}>{courses.reduce((s, c) => s + (Number(c.credits) || 3), 0)}학점</span>
+        <span style={{ fontSize: '12px', color, fontWeight: 'bold' }}>{credits}학점</span>
       </div>
-      {courses.map(c => (
-        <div key={getCourseId(c)} style={{ display: 'flex', alignItems: 'center', padding: '7px 8px', backgroundColor: '#fff', border: `1px solid ${color}33`, borderRadius: '6px', marginBottom: '4px' }}>
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ fontSize: '12px', fontWeight: '600', color: '#212529', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.course_name}</div>
-            <div style={{ fontSize: '10px', color: '#868e96' }}>{c.credits}학점</div>
+      {courses.length === 0 ? (
+        <div style={{ padding: '10px', textAlign: 'center', color: '#adb5bd', fontSize: '12px', backgroundColor: '#f1f3f5', borderRadius: '6px' }}>선택된 과목 없음</div>
+      ) : (
+        courses.map(c => (
+          <div key={getCourseId(c)} style={{ display: 'flex', alignItems: 'center', padding: '7px 8px', backgroundColor: '#fff', border: `1px solid ${color}33`, borderRadius: '6px', marginBottom: '4px' }}>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ fontSize: '12px', fontWeight: '600', color: '#212529', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.course_name}</div>
+              <div style={{ fontSize: '10px', color: '#868e96' }}>{c.credits}학점</div>
+            </div>
+            <button type="button" onClick={() => onToggle(c)} style={{ background: 'none', border: 'none', color: '#adb5bd', fontSize: '16px', cursor: 'pointer' }}>&times;</button>
           </div>
-          <button type="button" onClick={() => onToggle(c)} style={{ background: 'none', border: 'none', color: '#adb5bd', fontSize: '16px', cursor: 'pointer' }}>&times;</button>
-        </div>
-      ))}
+        ))
+      )}
     </div>
   );
 }
